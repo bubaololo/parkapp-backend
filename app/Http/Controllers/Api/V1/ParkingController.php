@@ -11,6 +11,14 @@ use Illuminate\Http\Response;
 
 class ParkingController extends Controller
 {
+    public function index()
+    {
+        $activeParkings = Parking::active()->latest('start_time')->get();
+        
+        return ParkingResource::collection($activeParkings);
+    }
+    
+    
     public function start(Request $request)
     {
         $parkingData = $request->validate([
@@ -33,6 +41,18 @@ class ParkingController extends Controller
         
         return ParkingResource::make($parking);
     }
+    
+    public function history()
+    {
+        $stoppedParkings = Parking::stopped()
+            ->with(['vehicle' => fn ($q) => $q->withTrashed()])
+            ->latest('stop_time')
+            ->get();
+        
+        return ParkingResource::collection($stoppedParkings);
+    }
+    
+    
     
     public function show(Parking $parking)
     {
